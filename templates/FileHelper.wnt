@@ -1,0 +1,186 @@
+<?php
+
+namespace {{psr4}}\Helpers;
+
+class FileHelper 
+{
+
+    protected static function getFacadeAccessor()
+    {
+        return __CLASS__;
+    }
+
+    public static function isExist($path = '')
+    {
+        return is_dir($path);
+    }
+
+    public static function createDir($path = '')
+    {
+        return self::isExist($path) 
+               ? true 
+               : mkdir(iconv("UTF-8", "GBK", $path), 0777, true);
+    }
+
+    public static function getFileType($filename)
+    {
+        if (!is_file($filename)) 
+        {
+            return '';
+        }
+
+        $path = pathinfo($filename);
+        return $path['extension'];
+    }
+
+    public static function getFileContent($filename)
+    {
+        if (!is_file($filename)) 
+        {
+            return $data;
+        }
+        switch (self::getFileType($filename)) {
+            case 'csv':
+                //No break
+            case 'CSV':
+                $data = self::getCsvContent($filename);
+                break;
+            case 'json':
+                //No break
+            case 'JSON':
+                $data = self::getJsonContent($filename);
+                break;
+            case 'txt':
+                //No break
+            case 'TXT':
+                $data = self::getTxtContent($filename);
+                break;
+            case 'log':
+                //No break
+            case 'LOG':
+                $data = self::getLogContent($filename);
+                break;
+            case 'xml':
+                //No break
+            case 'XML':
+                $data = self::getXmlContent($filename);
+                break;
+            case 'yml':
+                //No break
+            case 'YML':
+                $data = self::getYmlContent($filename);
+                break;
+            default:
+                break;
+        }
+
+        return $data;
+    }
+
+    public static function getCsvContent($filename)
+    {
+        if (!is_file($filename)) {
+            return array();
+        }
+
+        $file = fopen($filename,'r');
+        $titles = fgetcsv($file);
+        while ($row = fgetcsv($file)) {//read one line per-time
+            $param = array();
+            foreach ($titles as $key => $title) {
+                $param[$title] = $row[$key];
+            }
+            $csv[] = $param;
+        }
+
+       return $csv;
+    }
+
+    public static function getJsonContent($filename)
+    {
+        if (!is_file($filename)) {
+            return array();
+        }
+
+        $json_raw_string = file_get_contents($filename);
+        return json_decode($json_raw_string, true);
+    }
+
+    public static function getLogContent($filename)
+    {
+        if (!is_file($filename)) {
+            return array();
+        }
+        $file = fopen($filename, "r");
+
+        while (!feof($file)) {
+             $log_raw_data[] = fgets($file);
+        }    
+        fclose($file);
+        return $log_raw_data;
+    }
+
+    public static function getTxtContent($filename)
+    {
+        if (!is_file($filename)) {
+            return array();
+        }
+        $file = fopen($filename, "r");
+        $title = explode('|', fgets($file));
+        while (!feof($file)) {
+            $row = explode('|', fgets($file));//fgets() read one line as cursor
+            $param = array();
+            foreach ($title as $key => $value) {
+                if (strlen(trim($value)) == 0) {
+                    continue;
+                }
+                $param[trim($value)] = trim($row[$key]);
+            }
+            $txt_raw_data[] = $param;
+        }    
+        fclose($file);
+
+        return $txt_raw_data;
+    }
+
+    public static function getXmlContent($filename)
+    {
+        if (!is_file($filename)) {
+            return array();
+        }
+
+        $raw_xml = simplexml_load_file($filename);
+        foreach($raw_xml as $key => $xml_child) {
+            $xml[] = get_object_vars($xml_child);
+        }
+
+        return $xml;
+    }
+
+    public static function getYmlContent($filename)//needs to composer mustangostang/spyc
+    {
+        // if (!is_file($filename)) 
+        // {
+        //     return array();
+        // }
+
+        // $raw_yml = yaml_parse_file($filename);
+        // var_dump($raw_yml);die;
+        // foreach($raw_xml as $key => $xml_child)
+        // {
+        //     $xml[] = get_object_vars($xml_child);
+        // }
+
+        return $xml = array();
+    }
+
+    public static function writeToFile($filename, $content, $is_append = false)
+    {
+        if (!empty($filename)) {
+            return file_put_contents($filename, $content, $is_append ? FILE_APPEND : null);
+        } else {
+            return false;
+        }
+    }
+
+}

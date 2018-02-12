@@ -1,0 +1,40 @@
+<?php 
+
+namespace {{psr4}}\Commands;
+
+use {{psr4}}\Handlers\exampleHandler;
+
+class ExampleCommand extends BaseCommand 
+{
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     * 
+     * @command like this:
+     *    php artisan example argumen --option=xxxx
+     */
+    protected $signature = "example 
+    {argumen : {your description}}
+    {--option= : {your description}}";
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = '{your description}';
+
+    /**
+     * Execute the console command.
+     *
+     * @return mixed
+     */
+    public function handle()
+    {
+        $options = $this->options();
+
+        $result = exampleHandler::instance($options)->run();
+        echo json_encode($result);
+    }
+}

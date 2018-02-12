@@ -1,0 +1,6 @@
+<?php
+
+return array(
+
+    'log_path' => storage_path()."/logs/{{name}}/processLogs/"
+);

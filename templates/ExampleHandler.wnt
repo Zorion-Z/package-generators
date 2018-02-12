@@ -1,0 +1,35 @@
+<?php
+
+namespace {{psr4}}\Handlers;
+
+use {{psr4}}\Models\dbModel;
+use {{psr4}}\Models\exampleModel;
+
+class exampleHandler
+{
+    public static function instance()
+    {
+        return new static;
+    }
+
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+    }
+
+    /**
+     * Begin handle the program
+     * 
+     * @return void
+     */
+    public function run()
+    {
+        $example_result = exampleModel::instance()->getData();
+        $db_result = dbModel::instance()->get()->toArray();
+        return array($example_result, $db_result);
+    }
+}

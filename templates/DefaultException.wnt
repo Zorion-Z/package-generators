@@ -1,0 +1,8 @@
+<?php 
+
+namespace {{psr4}}\Exceptions;
+
+class DefaultException extends \Exception 
+{
+
+}

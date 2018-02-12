@@ -1,0 +1,30 @@
+<?php 
+
+namespace {{psr4}};
+
+use Illuminate\Support\ServiceProvider;
+
+class CommandsServiceProvider extends ServiceProvider 
+{
+
+    public function register()
+    {
+        $this->registerCommand();
+        $this->loadConfig();
+    }
+
+    protected function registerCommand() 
+    {
+        $this->app->singleton("command.{{name}}.ExampleCommand", function($app){
+            return $app["{{vendor}}\{{name}}\Commands\ExampleCommand"];
+        });
+        $this->commands("command.{{name}}.ExampleCommand");
+    }
+
+    protected function loadConfig() 
+    {
+    	$this->mergeConfigFrom(__DIR__.'\..\config\main.config.php', "{{name}}.main");
+    	$this->mergeConfigFrom(__DIR__.'\..\config\database.config.php', "database.connections");
+    }
+
+}

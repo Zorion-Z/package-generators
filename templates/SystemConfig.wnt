@@ -1,0 +1,31 @@
+<?php
+
+namespace {{psr4}}\Helpers;
+
+class SystemConfig 
+{
+    protected static function getFacadeAccessor()
+    {
+        return __CLASS__;
+    }
+    
+    public static function _set_memory_limit($memory = '128M')
+    {
+    	ini_set('memory_limit', $memory);
+    }
+
+    public static function _set_time_limit($second = 10)
+    {	
+    	set_time_limit($second);
+    }
+
+    public static function _set_error_reporting($level = 7)
+    {	
+    	error_reporting($level);
+    }
+
+    public static function _set_time_zone($time_zone = RPC)
+    {   
+        date_default_timezone_set($time_zone);
+    }
+}

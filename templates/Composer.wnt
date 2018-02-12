@@ -1,0 +1,36 @@
+{
+    "name": "{{vendor}}/{{name}}",
+    "description": "xxxxxx",
+	"keywords": ["lumen", "laravel", "rest", "api"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "xxxxx",
+            "email": "xxxxxx@test.com"
+        }
+    ],
+    "require": {
+    	"php": ">=5.5.0",
+        "illuminate/console": "^5.1",
+        "illuminate/filesystem": "^5.1",
+        "fzaninotto/faker": "^1.5"
+    },
+    "autoload": {
+    	"psr-4": {
+    		"{{psr4}}\\": "src/"
+    	},
+        "files": [
+            "src/../config/CONST.php"
+        ]
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "dev"
+        },
+        "laravel": {
+            "providers": [
+                "{{psr4}}\\CommandsServiceProvider"
+            ]
+        }
+    }
+}

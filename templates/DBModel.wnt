@@ -1,0 +1,27 @@
+<?php 
+
+namespace {{psr4}}\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class dbModel extends Model 
+{
+
+	protected $connection = 'test';
+
+	protected $connection = 'test_table';
+
+	public $timestamps = false;
+  
+	protected $fillable = array();
+
+    protected $dates = array();
+
+    public static $rules = array();
+
+    public static function instance()
+	{
+		return new static;
+	}
+    
+}

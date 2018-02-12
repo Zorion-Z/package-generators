@@ -1,0 +1,89 @@
+<?php
+
+namespace {{psr4}}\Helpers;
+
+use Monolog\Logger; 
+use Monolog\Handler\StreamHandler;
+use {{psr4}}\Helpers\FileHelper;
+
+class monitorLog
+{
+    /**
+     * @var Singleton reference to singleton instance
+     */
+    private static $instance;
+
+    private $logger;
+
+    protected static function getFacadeAccessor()
+    {
+        return __CLASS__;
+    }
+
+    /**
+     * 通过延迟加载（用到时才加载）获取实例
+     *
+     * @return self
+     */
+    public static function getInstance($name = 'default')
+    {
+        if (null === static::$instance) {
+            static::$instance = new static($name);
+        }
+        return static::$instance;
+    }
+
+    /**
+     * 构造函数私有，不允许在外部实例化
+     *
+     */
+    private function __construct($name = 'default')
+    {
+        FileHelper::createDir(config({{name}}_TOOL_NAME.'.log_path'));
+        $this->logger = new Logger(ucfirst({{name}}_TOOL_NAME).' Program');
+        $this->_setName($name);
+        $this->_pushHandler();
+    }
+
+    /**
+     * 防止对象实例被克隆
+     *
+     * @return void
+     */
+    private function __clone()
+    {
+    }
+
+    /**
+     * 防止被反序列化
+     *
+     * @return void
+     */
+    private function __wakeup()
+    {
+    }
+
+    public function _setName($name = 'default')
+    {
+        $static_name = $this->logger->getName();
+        $this->logger = $this->logger->withName($static_name.' '.$name);
+    }
+
+    public function _pushHandler()
+    {
+        $this->logger->pushHandler(
+            new StreamHandler(
+                config(TOOL_NAME.'.log_path').date('H-i').'.log',
+                Logger::INFO
+            )
+        );
+    }
+
+    public function addlog($info = '' ,$content = array())
+    {
+        if (!is_array($content)) {
+            $content = array($content);
+        }
+        $this->logger->info($info.":", $content);
+    }
+}

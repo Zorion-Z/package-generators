@@ -1,0 +1,127 @@
+<?php 
+
+namespace {{psr4}}\Argument;
+
+use {{psr4}}\Argument\ArgumentFormat;
+use {{psr4}}\Exceptions\ArgumentParserException;
+
+class ArgumentParser 
+{
+
+	protected $format;
+
+	public function __construct(ArgumentFormat $format)
+	{
+	    $this->format = $format;
+	}
+
+	public function parse($args)
+	{
+		return $this->parseToken($args, $this->format);
+	}
+
+	protected function parseToken($token, ArgumentFormat $format)
+	{
+	    switch($format->type) {
+	        case 'string':
+	            return $token;
+	            break;
+	        case 'number':
+	            return $this->parseNumber($token);
+	            break;
+	        case 'boolean':
+	            return $this->parseBoolean($token, $format->name);
+	            break;
+	        case 'array':
+	            return $this->parseArray($token, $format->separator, $format->format);
+	            break;
+	        case 'object':
+	            return $this->parseObject($token, $format->separator, $format->format);
+	            break;
+	        default:
+	            throw new ArgumentParserException("Unknown format type: '{$format->type}'");
+	            break;
+	    }
+	}
+
+	protected function parseNumber($token)
+	{
+	    if (!is_numeric($token)) {
+	        throw new ArgumentParserException("Unable to parse '{$token}' as number");
+	    }
+	    return $token + 0;
+	}
+
+	protected function parseBoolean($token, $name)
+	{
+	    if (in_array($token, ['yes', 'true', '1', $name])) {
+	        return true;
+	    } elseif (in_array($token, ['no', 'false', '0', "!{$name}"])) {
+	        return false;
+	    } else {
+	        return null;
+	    }
+	}
+
+	protected function parseArray($token, $separator, ArgumentFormat $format)
+	{
+	    $result = array();
+	    $tokens = explode($separator, $token);
+	    foreach ($tokens as $value) {
+	        array_push($result, $this->parseToken($value, $format));
+	    }
+	    return $result;
+	}
+
+	protected function parseObject($token, $separator, $fields)
+	{
+	    $result = array();
+	    $tokens = explode($separator, $token);
+	    $tokens_number = count($tokens);
+
+	    $required_fields_indexes = array();
+	    $optional_fields_indexes = array();
+	    foreach ($fields as $index => $format) {
+	        if ($format->default === null) {
+	            array_push($required_fields_indexes, $index);
+	        } else {
+	            array_push($optional_fields_indexes, $index);
+	        }
+	    }
+	    $required_fields_indexes_number = count($required_fields_indexes);
+
+	    if ($tokens_number < $required_fields_indexes_number) 
+	    {
+	        $required_fields = array_map(function ($index) use ($fields) {
+	                return $fields[$index]->name;
+	            }, $required_fields_indexes);
+	        $required_fields = implode($separator, $required_fields);
+	        throw new ArgumentParserException("Required field missing: {$tokens_number} given "
+	            . "({$token}) but {$required_fields_indexes_number} required ({$required_fields})");
+	    }
+
+	    $given_optional_fields_indexes = array_slice(
+	        $optional_fields_indexes, 0, $tokens_number - $required_fields_indexes_number);
+	    $not_present_fields_indexes = array_slice(
+	        $optional_fields_indexes, $tokens_number - $required_fields_indexes_number);
+	    $given_fields_indexes = array_merge($required_fields_indexes, $given_optional_fields_indexes);
+	    sort($given_fields_indexes);
+
+	    // Fill the given fields
+	    for ($i = 0; $i < $tokens_number; $i ++) 
+	    {
+	        $field_format = $fields[$given_fields_indexes[$i]];
+	        $result[$field_format->name] = $this->parseToken($tokens[$i], $field_format);
+	    }
+
+	    // Fill other fields with default values
+	    foreach ($not_present_fields_indexes as $index) 
+	    {
+	        $field_format = $fields[$index];
+	        $result[$field_format->name] = $field_format->default;
+	    }
+
+	    return $result;
+	}
+
+}
